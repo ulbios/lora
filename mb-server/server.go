@@ -1,43 +1,79 @@
 package main
 
 import (
+	"flag"
+	"fmt"
 	"log"
-	"os"
+	"strings"
 	"time"
 
 	"github.com/goburrow/serial"
 	mbserver "github.com/wilkingj/GoModbusServer"
 )
 
+var (
+	bind_addr string
+	bind_port int
+
+	serial_dev string
+	parity     string
+	slave_id   int
+	baud_rate  int
+	data_bits  int
+	stop_bits  int
+	timeout    int
+)
+
 func main() {
-	serv, err := mbserver.NewServer(1)
+	// TCP/IP stuff
+	flag.StringVar(&bind_addr, "bind-address", "127.0.0.1", "Address to listen on")
+	flag.IntVar(&bind_port, "bind-port", 1502, "Port to listen on")
+
+	// Serial stuff
+	flag.StringVar(&serial_dev, "serial-device", "/dev/ttyUSB0", "Serial device to listen on: a path to a device or 'NONE'")
+	flag.StringVar(&parity, "serial-parity", "N", "Serial parity: N | E | O")
+	flag.IntVar(&slave_id, "slave-id", 1, "Slave ID to run as [1, 247]")
+	flag.IntVar(&baud_rate, "baud-rate", 115200, "Server baud rate in bps")
+	flag.IntVar(&data_bits, "data-bits", 8, "Data bits")
+	flag.IntVar(&stop_bits, "stop-bits", 1, "Stop bits")
+	flag.IntVar(&timeout, "timeout", 10, "Timeout in s")
+
+	flag.Parse()
+
+	serv, err := mbserver.NewServer(uint8(slave_id))
 	if err != nil {
-		log.Fatalf("Couldn't instantiate a ModBus server: %v\n", err)
+		log.Fatalf("Couldn't instantiate the ModBus server: %v\n", err)
 	}
 
 	serv.HoldingRegisters = make([]byte, 653356*2)
-	serv.HoldingRegisters[0] = 0xF
-	serv.HoldingRegisters[1] = 0xA
-	serv.HoldingRegisters[2] = 0xB
 
-	err = serv.ListenTCP("127.0.0.1:1502")
-	if err != nil {
-		log.Fatalf("Coulnd't listen on port 1502: %v\n", err)
+	// Fill in some dummy values to make checking stuff easier
+	serv.HoldingRegisters[0] = 0xA
+	serv.HoldingRegisters[1] = 0xB
+	serv.HoldingRegisters[2] = 0xC
+	serv.HoldingRegisters[3] = 0xD
+
+	if err := serv.ListenTCP(fmt.Sprintf("%s:%d", bind_addr, bind_port)); err != nil {
+		log.Fatalf("Couldn't listen on %s:%d -> %v\n", bind_addr, bind_port, err)
 	}
 	defer serv.Close()
+	log.Printf("Began listening on %s:%d\n", bind_addr, bind_port)
 
-	err = serv.ListenRTU(&serial.Config{
-		Address:  os.Args[1],
-		BaudRate: 115200,
-		DataBits: 8,
-		StopBits: 1,
-		Parity:   "N",
-		Timeout:  10 * time.Second})
-	if err != nil {
-		log.Fatalf("failed to listen, got %v\n", err)
+	if strings.ToLower(serial_dev) != "none" {
+		if err := serv.ListenRTU(
+			&serial.Config{
+				Address:  serial_dev,
+				BaudRate: baud_rate,
+				DataBits: data_bits,
+				StopBits: stop_bits,
+				Parity:   parity,
+				Timeout:  time.Duration(timeout) * time.Second,
+			}); err != nil {
+			log.Fatalf("Failed to listen on %s: %v\n", serial_dev, err)
+		}
+		log.Printf("Began listening on %s\n", serial_dev)
 	}
 
-	log.Printf("Began listening on 127.0.0.1:1502!\n")
 	for {
 		time.Sleep(1 * time.Second)
 	}
