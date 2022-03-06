@@ -78,7 +78,7 @@ func arg_validation(cmd *cobra.Command, args []string) error {
 
 func mb_comms(args []string, cli modbus.Client) {
 	// The input arguments have already been validated through the mbotcp.Args function!
-	addr, _ := strconv.ParseUint(args[1], 16, 16)
+	addr, _ := strconv.ParseUint(args[2], 16, 16)
 
 	switch args[1] {
 	case "read":
