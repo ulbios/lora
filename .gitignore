@@ -1,0 +1,6 @@
+# Ignore hidden files except the .gitignore itself
+.*
+!.gitignore
+
+# Ignore built executables
+bin/
