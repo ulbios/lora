@@ -96,6 +96,14 @@ func mb_comms(args []string, cli modbus.Client) {
 			os.Exit(-1)
 		}
 		fmt.Printf("Correctly wrote %#x at address %#x on the ModBus slave\n", data, addr)
+
+	case "serialnum":
+		sn, err := read_alvin_serial_number(cli)
+		if err != nil {
+			fmt.Printf("Couldn't read data from the ModBus slave: %v\n", err)
+			os.Exit(-1)
+		}
+		fmt.Printf("Alvin probe serial number -> %s\n", sn)
 	}
 }
 
@@ -114,4 +122,25 @@ func write_holding_register(c modbus.Client, addr, data uint16) error {
 		return err
 	}
 	return nil
+}
+
+func read_alvin_serial_number(c modbus.Client) (string, error) {
+	var tmp [4]uint32
+	for i := 9; i >= 6; i-- {
+		v, err := read_holding_register(c, uint16(i))
+		if err != nil {
+			return "", fmt.Errorf(fmt.Sprintf("error reading a resgister: %v", err))
+		}
+		tmp[9-i] = v
+	}
+
+	convert := func(raw_data [4]uint32) string {
+		tmp := make([]interface{}, len(raw_data))
+		for i, v := range raw_data {
+			tmp[i] = v
+		}
+		return fmt.Sprintf("%04X-%04X-%04X-%04X", tmp...)
+	}
+
+	return convert(tmp), nil
 }
