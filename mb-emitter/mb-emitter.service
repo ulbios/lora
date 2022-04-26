@@ -1,0 +1,11 @@
+[Unit]
+Description=A 420 probe reader over ModBus with LoRa output
+After=network.target
+
+[Service]
+Type=simple
+ExecStart=/bin/mb-emitter
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
