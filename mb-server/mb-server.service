@@ -1,0 +1,11 @@
+[Unit]
+Description=A serial-and-TCP enabled ModBus Server
+After=network.target
+
+[Service]
+Type=simple
+ExecStart=/bin/mb-server -mb-bind-address 0.0.0.0 -serial-device /dev/ttyUSB0 -udp-bind-address 0.0.0.0 -lora-enable
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
