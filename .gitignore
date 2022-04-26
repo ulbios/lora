@@ -4,3 +4,6 @@
 
 # Ignore built executables
 bin/
+
+# Ignore datasheets
+*.pdf
