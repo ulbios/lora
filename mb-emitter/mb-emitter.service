@@ -1,10 +1,10 @@
 [Unit]
-Description=A 420 probe reader over ModBus with LoRa output
+Description=A 4-20 mA probe reader over ModBus with LoRa output
 After=network.target
 
 [Service]
 Type=simple
-ExecStart=/bin/mb-emitter
+ExecStart=/bin/mb-emitter --lora-enable --poll-interval '0 * * * * *'
 Restart=always
 
 [Install]
