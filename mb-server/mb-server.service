@@ -1,10 +1,10 @@
 [Unit]
-Description=A serial-and-TCP enabled ModBus Server
+Description=A serial-and-TCP enabled ModBus Server receiving data over LoRa and UDP
 After=network.target
 
 [Service]
 Type=simple
-ExecStart=/bin/mb-server -mb-bind-address 0.0.0.0 -serial-device /dev/ttyUSB0 -udp-bind-address 0.0.0.0 -lora-enable
+ExecStart=/bin/mb-server --mb-bind-address 0.0.0.0 --serial-device none --udp-bind-address 0.0.0.0 --lora-enable
 Restart=always
 
 [Install]
