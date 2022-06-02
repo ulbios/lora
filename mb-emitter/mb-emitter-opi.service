@@ -1,0 +1,24 @@
+[Unit]
+Description=A 4-20 mA probe reader over ModBus with LoRa output
+After=network.target
+
+# This service controls GPIO pins thorugh sysfs-gpio. Check these two sources:
+    # https://www.ics.com/blog/gpio-programming-using-sysfs-interface
+    # https://www.kernel.org/doc/html/latest/admin-guide/gpio/sysfs.html
+
+# Note the pin numbers are those show on the GPIO column on the output of `gpio readall`.
+    # Be sure to change it if wiring changes too!
+
+# You should also consider looking into the character device interface dirven through
+    # gpiod and libraries such as https://pkg.go.dev/github.com/warthog618/gpiod
+
+[Service]
+Type=simple
+ExecStartPre=/bin/bash -c 'echo 21 > /sys/class/gpio/export'
+ExecStartPre=/bin/bash -c 'echo out > /sys/class/gpio/gpio21/direction'
+ExecStart=/bin/mb-emitter --lora-enable --lora-spi-port /dev/spidev0.0 --soc-model opi --poll-interval '30 * * * * *'
+ExecStopPost=/bin/bash -c 'echo 21 > /sys/class/gpio/unexport'
+Restart=always
+
+[Install]
+WantedBy=multi-user.target

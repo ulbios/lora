@@ -17,6 +17,9 @@ type DataPoint struct {
 }
 
 var (
+	soc      string
+	sysfsPin int
+
 	poll_interval string
 	read_param    string
 
@@ -53,7 +56,10 @@ var (
 			// mb_cli, mb_handler := GetModBusCli(serial_dev)
 			// defer mb_handler.Close()
 
-			lora_cli, lora_pc := GetLoRaCli()
+			lora_cli, lora_pc, err := GetLoRaCli()
+			if err != nil {
+				log.Fatalf("error opening the LoRa radio: %v\n", err)
+			}
 			defer lora_pc.Close()
 
 			hn, _ := os.Hostname()
@@ -80,8 +86,9 @@ func init() {
 	// Disable Cobra completions
 	rootCmd.CompletionOptions.DisableDefaultCmd = true
 
-	// General
-	// rootCmd.Flags().IntVar(&poll_interval, "poll-interval", 30, "Poll interval in seconds")
+	// Hardware selection
+	rootCmd.Flags().StringVar(&soc, "soc-model", "rpi", "The SoC to run on.")
+	rootCmd.Flags().IntVar(&sysfsPin, "sysfs-pin", 21, "GPIO pin to control through SysFs")
 
 	// The Cron syntax follows https://en.wikipedia.org/wiki/Cron
 	rootCmd.Flags().StringVar(&poll_interval, "poll-interval", "0 * * * * *",
