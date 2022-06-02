@@ -97,7 +97,7 @@ func init() {
 	rootCmd.CompletionOptions.DisableDefaultCmd = true
 
 	// General
-	rootCmd.Flags().StringVar(&dev_map, "device-map", "coruscant:4,geonosis:5", "Mapping of Device IDs -> ModBus Addresses")
+	rootCmd.Flags().StringVar(&dev_map, "device-map", "coruscant:4,geonosis:5,corellia:6", "Mapping of Device IDs -> ModBus Addresses")
 
 	// ModBus over TCP
 	rootCmd.Flags().StringVar(&mb_bind_addr, "mb-bind-address", "127.0.0.1", "Address the ModBus server is to listen on")
