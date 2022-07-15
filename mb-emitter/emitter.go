@@ -29,10 +29,13 @@ func GetModBusCli(serial_dev string) (modbus.Client, *modbus.RTUClientHandler) {
 		return nil, nil
 	}
 
+	log.Printf("Connected to ModBus slave @ %s with Slave ID %d\n", serial_dev, slave_id)
+
 	return modbus.NewClient(handler), handler
 }
 
 func Read420(c modbus.Client) (uint32, error) {
+	log.Printf("Trying to read address %d on %s\n", param_to_addr[read_param], serial_dev)
 	r_data, err := c.ReadHoldingRegisters(param_to_addr[read_param], 1)
 	if err != nil {
 		return 0, err

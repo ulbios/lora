@@ -53,8 +53,8 @@ var (
 			// Remove leading date and time from log messages
 			log.SetFlags(log.Flags() &^ (log.Ldate | log.Ltime))
 
-			// mb_cli, mb_handler := GetModBusCli(serial_dev)
-			// defer mb_handler.Close()
+			mb_cli, mb_handler := GetModBusCli(serial_dev)
+			defer mb_handler.Close()
 
 			lora_cli, lora_pc, err := GetLoRaCli()
 			if err != nil {
@@ -67,12 +67,12 @@ var (
 			s := gocron.NewScheduler(time.UTC)
 
 			_, _ = s.CronWithSeconds(poll_interval).Do(func() {
-				// data, err := Read420(mb_cli)
-				// if err != nil {
-				// 	log.Printf("error reading 420 data: %v\n", err)
-				// 	return
-				// }
-				data := 10
+				data, err := Read420(mb_cli)
+				if err != nil {
+					log.Printf("error reading 420 data: %v\n", err)
+					return
+				}
+				// data := 10
 				if err := SendOverLoRa(lora_cli, hn, int(data)); err != nil {
 					log.Printf("error sending data over LoRa: %v\n", err)
 				}
