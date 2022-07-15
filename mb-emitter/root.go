@@ -99,10 +99,10 @@ func init() {
 	rootCmd.Flags().StringVar(&serial_dev, "serial-device", "/dev/ttyUSB0", "Serial device to listen on: a path to a device or 'NONE'")
 	rootCmd.Flags().StringVar(&parity, "serial-parity", "N", "Serial parity: N | E | O")
 	rootCmd.Flags().IntVar(&slave_id, "slave-id", 1, "Slave ID to connect to [1, 247]")
-	rootCmd.Flags().IntVar(&baud_rate, "baud-rate", 115200, "Server baud rate in bps")
+	rootCmd.Flags().IntVar(&baud_rate, "baud-rate", 9600, "Server baud rate in bps")
 	rootCmd.Flags().IntVar(&data_bits, "data-bits", 8, "Data bits")
 	rootCmd.Flags().IntVar(&stop_bits, "stop-bits", 1, "Stop bits")
-	rootCmd.Flags().IntVar(&timeout, "timeout", 10, "Timeout in s")
+	rootCmd.Flags().IntVar(&timeout, "timeout", 5, "Timeout in s")
 
 	// Data output over LoRa
 	rootCmd.Flags().BoolVar(&lora_enable, "lora-enable", false, "Whether to enable data reception over LoRa")
