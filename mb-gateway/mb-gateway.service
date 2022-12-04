@@ -1,0 +1,11 @@
+[Unit]
+Description=A LoRa gateway and 4-20 mA probe reader over ModBus with LoRa output
+After=network.target
+
+[Service]
+Type=simple
+ExecStart=/bin/mb-server --lora-enable --poll-interval '0 * * * * *' --lora-freq 868
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
