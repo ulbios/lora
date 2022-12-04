@@ -43,7 +43,7 @@ func Read420(c modbus.Client) (uint32, error) {
 	return uint32(r_data[0])<<8 | uint32(r_data[1]), nil
 }
 
-func GetLoRaCli() (*rfm9x.Dev, spi.PortCloser, error) {
+func GetLoRaCli(freq int64) (*rfm9x.Dev, spi.PortCloser, error) {
 	if _, err := host.Init(); err != nil {
 		log.Printf("error initialising Periph: %v\n", err)
 		return nil, nil, err
@@ -60,6 +60,8 @@ func GetLoRaCli() (*rfm9x.Dev, spi.PortCloser, error) {
 	if soc == "opi" {
 		d_opts.ResetPin = sysfs.Pins[sysfsPin]
 	}
+
+	d_opts.FrequencyMHz = freq
 
 	radio, err := rfm9x.New(
 		p,

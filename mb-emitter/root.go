@@ -31,8 +31,9 @@ var (
 	stop_bits  int
 	timeout    int
 
-	lora_enable   bool
-	lora_spi_port string
+	lora_enable       bool
+	lora_spi_port     string
+	carrier_frequency int64
 
 	param_to_addr map[string]uint16 = map[string]uint16{
 		"v_1": 0, "v_2": 1, "c_1": 2, "c_2": 3,
@@ -56,7 +57,7 @@ var (
 			mb_cli, mb_handler := GetModBusCli(serial_dev)
 			defer mb_handler.Close()
 
-			lora_cli, lora_pc, err := GetLoRaCli()
+			lora_cli, lora_pc, err := GetLoRaCli(carrier_frequency)
 			if err != nil {
 				log.Fatalf("error opening the LoRa radio: %v\n", err)
 			}
@@ -72,7 +73,7 @@ var (
 					log.Printf("error reading 420 data: %v\n", err)
 					return
 				}
-				// data := 10
+
 				if err := SendOverLoRa(lora_cli, hn, int(data)); err != nil {
 					log.Printf("error sending data over LoRa: %v\n", err)
 				}
@@ -107,4 +108,5 @@ func init() {
 	// Data output over LoRa
 	rootCmd.Flags().BoolVar(&lora_enable, "lora-enable", false, "Whether to enable data reception over LoRa")
 	rootCmd.Flags().StringVar(&lora_spi_port, "lora-spi-port", "/dev/spidev0.1", "SPI address the radio is on")
+	rootCmd.Flags().Int64Var(&carrier_frequency, "lora-freq", 868, "Carrier frequency in MHz")
 }

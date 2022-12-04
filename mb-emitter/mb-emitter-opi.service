@@ -16,7 +16,7 @@ After=network.target
 Type=simple
 ExecStartPre=/bin/bash -c 'echo 21 > /sys/class/gpio/export'
 ExecStartPre=/bin/bash -c 'echo out > /sys/class/gpio/gpio21/direction'
-ExecStart=/bin/mb-emitter --lora-enable --lora-spi-port /dev/spidev0.0 --soc-model opi --poll-interval '30 * * * * *'
+ExecStart=/bin/mb-emitter --lora-enable --lora-spi-port /dev/spidev0.0 --soc-model opi --poll-interval '30 * * * * *' --lora-freq 868
 ExecStopPost=/bin/bash -c 'echo 21 > /sys/class/gpio/unexport'
 Restart=always
 
