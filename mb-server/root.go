@@ -34,8 +34,9 @@ var (
 	udp_bind_addr string
 	udp_bind_port int
 
-	lora_enable   bool
-	lora_spi_port string
+	lora_enable       bool
+	lora_spi_port     string
+	carrier_frequency int64
 
 	id_to_mb_addr map[string]uint16 = map[string]uint16{}
 
@@ -79,7 +80,7 @@ var (
 				go InsertDataUDP()
 			}
 			if lora_enable {
-				go InsertDataLoRa()
+				go InsertDataLoRa(carrier_frequency)
 			}
 
 			sig_ch := make(chan os.Signal, 1)
@@ -120,4 +121,5 @@ func init() {
 	// Data input over LoRa
 	rootCmd.Flags().BoolVar(&lora_enable, "lora-enable", false, "Whether to enable data reception over LoRa")
 	rootCmd.Flags().StringVar(&lora_spi_port, "lora-spi-port", "/dev/spidev0.1", "SPI address the radio is on")
+	rootCmd.Flags().Int64Var(&carrier_frequency, "lora-freq", 868, "Carrier frequency in MHz")
 }

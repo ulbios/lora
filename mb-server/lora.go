@@ -11,7 +11,7 @@ import (
 	"periph.io/x/host/v3"
 )
 
-func InsertDataLoRa() error {
+func InsertDataLoRa(freq int64) error {
 	handler := mbclient.NewTCPClientHandler(fmt.Sprintf("%s:%d", mb_bind_addr, mb_bind_port))
 	if err := handler.Connect(); err != nil {
 		return err
@@ -39,6 +39,7 @@ func InsertDataLoRa() error {
 	fmt.Printf("LoRa: correctly opened SPI port %s\n", p)
 
 	d_opts := rfm9x.DefaultOpts
+	d_opts.FrequencyMHz = freq
 
 	radio, err := rfm9x.New(
 		p,
@@ -51,7 +52,7 @@ func InsertDataLoRa() error {
 	var dp DataPoint
 
 	for {
-		enc_pkt, err := radio.Receive()
+		enc_pkt, err := radio.Receive(0)
 		if err != nil {
 			log.Printf("LoRa: error receiving data: %v\n", err)
 			continue
