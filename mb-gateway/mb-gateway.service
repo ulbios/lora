@@ -4,7 +4,7 @@ After=network.target
 
 [Service]
 Type=simple
-ExecStart=/bin/mb-server --lora-enable --poll-interval '0 * * * * *' --lora-freq 868
+ExecStart=/bin/mb-gateway --lora-enable --poll-interval '0 * * * * *' --lora-freq 868
 Restart=always
 
 [Install]
