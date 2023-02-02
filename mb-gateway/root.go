@@ -106,7 +106,7 @@ func init() {
 	// The Cron syntax follows https://en.wikipedia.org/wiki/Cron
 	rootCmd.Flags().StringVar(&poll_interval, "poll-interval", "0 * * * * *",
 		"Poll interval as a Cron expression [1 minute @ minute start by default]")
-	rootCmd.Flags().StringVar(&read_param, "read-param", "c-1", "Parameter to read over ModBus")
+	rootCmd.Flags().StringVar(&read_param, "read-param", "c_1", "Parameter to read over ModBus")
 
 	// ModBus over RTU/Serial
 	rootCmd.Flags().StringVar(&serial_dev, "serial-device", "/dev/ttyUSB0", "Serial device to listen on: a path to a device or 'NONE'")
