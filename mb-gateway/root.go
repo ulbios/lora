@@ -72,19 +72,18 @@ var (
 				data, err := Read420(mb_cli)
 				if err != nil {
 					log.Printf("error reading 420 data: %v\n", err)
-					return
-				}
-
-				if err := SendOverLoRa(lora_cli, hn, int(data)); err != nil {
-					log.Printf("error sending data over LoRa: %v\n", err)
-					return
 				}
 
 				recvData, err := ReceiveOverLoRa(lora_cli, 1*time.Minute)
 				if err != nil {
 					log.Printf("error receiving data over LoRa: %v\n", err)
-					return
 				}
+
+				if err := SendOverLoRa(lora_cli, hn, int(data)); err != nil {
+					log.Printf("error sending data over LoRa: %v\n", err)
+				}
+
+				time.Sleep(1 * time.Second)
 
 				if err := SendOverLoRa(lora_cli, recvData.Id, recvData.Data); err != nil {
 					log.Printf("error sending data over LoRa: %v\n", err)
