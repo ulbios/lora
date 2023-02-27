@@ -37,6 +37,9 @@ var (
 	lora_enable       bool
 	lora_spi_port     string
 	carrier_frequency int64
+	lora_debug_level  int64
+	lora_recv_wait    int64
+	lora_recv_timeout int64
 
 	id_to_mb_addr map[string]uint16 = map[string]uint16{}
 
@@ -122,4 +125,7 @@ func init() {
 	rootCmd.Flags().BoolVar(&lora_enable, "lora-enable", false, "Whether to enable data reception over LoRa")
 	rootCmd.Flags().StringVar(&lora_spi_port, "lora-spi-port", "/dev/spidev0.1", "SPI address the radio is on")
 	rootCmd.Flags().Int64Var(&carrier_frequency, "lora-freq", 868, "Carrier frequency in MHz")
+	rootCmd.Flags().Int64Var(&lora_debug_level, "lora-dbg", 2, "Debug level from 0 to 5, being 4 the most verbose.")
+	rootCmd.Flags().Int64Var(&lora_recv_wait, "lora-wait", 500, "Time to wait on reception in ms.")
+	rootCmd.Flags().Int64Var(&lora_recv_timeout, "lora-timeout", 0, "Reception timeout in ms. To wait forever specify 0.")
 }
