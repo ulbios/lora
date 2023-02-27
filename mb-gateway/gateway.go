@@ -92,12 +92,17 @@ func SendOverLoRa(r *rfm9x.Dev, id string, data int) error {
 func ReceiveOverLoRa(r *rfm9x.Dev, timeout time.Duration) (DataPoint, error) {
 	var dp DataPoint
 
-	enc_pkt, err := r.Receive(timeout)
+	enc_pkt, err := r.Receive(1*time.Millisecond, timeout)
 	if err != nil {
-		return dp, fmt.Errorf("LoRa: error receiving data: %v\n", err)
+		return DataPoint{"corellia", 0}, fmt.Errorf("LoRa: error receiving data: %v\n", err)
 	}
+
+	if len(enc_pkt) < 5 {
+		return DataPoint{"corellia", 0}, fmt.Errorf("LoRa: the received data point is too short: %d bytes", len(enc_pkt))
+	}
+
 	if err := json.Unmarshal(enc_pkt[4:], &dp); err != nil {
-		return dp, fmt.Errorf("LoRa: error unmarshalling data: %v [%s]\n", err, enc_pkt[4:])
+		return DataPoint{"corellia", 0}, fmt.Errorf("LoRa: error unmarshalling data: %v [%s]\n", err, enc_pkt[4:])
 	}
 
 	return dp, nil
