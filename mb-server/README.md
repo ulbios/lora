@@ -1,11 +1,26 @@
-# Implementing a ModBus Slave
-We need to relay data to an industrial-grade PLC which leverages the *ModBus/TCP* protocol. This called for the implementation of a full-fledged ModBus *slave*.
+# ModBus/{TCP, RTU} Slave over LoRa
+This directory contains the implementation of a Modbus slave over both RTU (i.e. a RS-485 link) and TCP/IP. This
+slave will receive data over LoRa through a RFM9x radio and then make it available at the specified addresses
+based on the input options.
 
-In order to be as flexible as possible we enabled communication over both *TCP* and regular serial interfaces such as *RS-485*. The result of our efforts is contained in the `server.go` file defining the server itself together with the `mb-server.service` unit file which allows us to run it as a detached daemon under normal circumstances.
+This implementation ran on tbe control hub at Guadalajara's EDAR where it received data from two remote
+sensors leveraging the implementations found on `../mb-emitter` and `../mb-gateway`. The overall system
+can be regarded as:
 
-This slave will receive data it needs to offer to teh PLC behind it. In doing so we'll have to enable some sort of data entry procedures. On the filed we'll be receiving data over a LoRa radio with a protocol we've developed ourselves. The thing is, we actually have to test stuff out beforehand! That's why we decided to enable the reception of data over UDP too. We chose *UDP* over *TCP* due to its enhanced simplicity: there's no need to manage connections and the like! Given Go's native concurrency, this all works out of the box in a parallel fashion: that's quite something!
+    + ---------- +       + ---------- +       + --------- +
+    | mb-emitter | ----> | mb-gateway | ----> | mb-server |
+    + ---------- +       + ---------- +       + --------- +
 
-In order to leverage our UDP data path we need to somehow send information. We can thankfully do su with `nc(1)`. We just need to tell it to use UDP instead of TCP (which is the default) and we should be good to go:
+This implementation is to be in a headless fashion through the SystemD unit defined on file `mb-server.service`.
+
+In order to debug the implementation, we made it possible to insert data into the Modbus slave's registers
+not only through a LoRa radio, but also through UDP. That way we could verify data would be reachable by
+the industrial PLCs needing to receive the data. The reason behind leaning towards UDP rests on how it is
+much simpler to manage than TCP given its non-connection-oriented paradigm. What's more, thanks to Go's
+builtin concurrency we could make it all work cooperatively without too much hassle.
+
+In order to leverage our UDP data path we need to somehow send information. We can thankfully do so with `nc(1)`.
+We just need to tell it to use UDP instead of TCP (which is the default) and we should be good to go:
 
     # Run the server on another terminal: we'll bind the UDP socket to 127.0.0.1:1503
     collado@hoth:0:~$  ./bin/mb-server -serial-device none -udp-bind-address 127.0.0.1 -udp-bind-port 1503
@@ -14,4 +29,13 @@ In order to leverage our UDP data path we need to somehow send information. We c
     collado@hoth:0:~$ nc -u 127.0.0.1 1503
     {"msg": "A random message xD", "data": 5}
 
-With that you should be able to then query the server to get back the information it's updated. Nevertheless, the server's log messages should provide very verbosy information making the entire information update process very transparent.
+With that you should be able to then query the server to get back the information it's updated. Nevertheless,
+the server's log messages should provide very verbosy information making the entire information update process
+very transparent.
+
+As usual, compilation can be achieved with:
+
+    $ GOOS=linux GOARCH=arm go build
+
+Please note this project is not currently deployed anywhere: it has been superseded by the implementation
+residing on `../mb-master`.

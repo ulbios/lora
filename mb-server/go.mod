@@ -1,4 +1,4 @@
-module mb-server
+module module github.com/ulbios/lora/mb-server
 
 go 1.17
 
