@@ -1,4 +1,4 @@
-module mb-emitter
+module github.com/ulbios/lora/mb-emitter
 
 go 1.17
 
