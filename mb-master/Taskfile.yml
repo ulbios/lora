@@ -1,0 +1,24 @@
+version: '3'
+
+vars:
+  MAC_BIN:   './bin/mb-master-mac'
+  ARM_BIN:   './bin/mb-master-arm'
+  GIT_COMMIT:
+    sh: git log -n 1 --format=%h
+
+tasks:
+  build-mac:
+    desc: "Build the ModBus query tool for mac/amd64 platforms."
+    cmds:
+      - go build -o {{.MAC_BIN}} -ldflags "-X main.commit={{.GIT_COMMIT}}"
+    env:
+      GOOS:   'darwin'
+      GOARCH: 'amd64'
+
+  build-arm:
+    desc: "Build the ModBus query tool for linux/arm platforms."
+    cmds:
+      - go build -o {{.ARM_BIN}} -ldflags "-X main.commit={{.GIT_COMMIT}}"
+    env:
+      GOOS:   'linux'
+      GOARCH: 'arm'

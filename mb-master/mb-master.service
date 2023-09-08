@@ -1,0 +1,13 @@
+[Unit]
+Description=A RTU and TCP ModBus Server receiving data over LoRa and UDP
+After=network.target
+
+[Service]
+Type=simple
+ExecStart=/bin/mb-master --local-mb-bind-address 0.0.0.0 --local-mb-bind-port 502 \
+    --remote-mb-enable --remote-mb-serial-dev /dev/ttyUSB0 --remote-mb-timeout 60 \
+    --udp-enable --udp-bind-address 0.0.0.0
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
