@@ -7,7 +7,7 @@ vars:
     sh: git log -n 1 --format=%h
 
 tasks:
-  build-mac:
+  mac:
     desc: "Build the ModBus query tool for mac/amd64 platforms."
     cmds:
       - go build -o {{.MAC_BIN}} -ldflags "-X main.commit={{.GIT_COMMIT}}"
@@ -15,7 +15,7 @@ tasks:
       GOOS:   'darwin'
       GOARCH: 'amd64'
 
-  build-arm:
+  arm:
     desc: "Build the ModBus query tool for linux/arm platforms."
     cmds:
       - go build -o {{.ARM_BIN}} -ldflags "-X main.commit={{.GIT_COMMIT}}"

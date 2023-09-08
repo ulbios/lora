@@ -1,17 +1,54 @@
-# Implementing a ModBus Slave
-We need to relay data to an industrial-grade PLC which leverages the *ModBus/TCP* protocol. This called for the implementation of a full-fledged ModBus *slave*.
+# Transparent Modbus/TCP Slave
+This directory contains an implementation superseding all those found on `../mb-{emitter,gateway,server}`.
+Instead of directly interfacing with a LoRa-capable radio (i.e. the RFM9x) we instead chose to leverage
+a commercial Modbus-to-LoRa bridge converter. This piece of equipment works in such a way that any incoming
+Modbus RTU frames are radiated over LoRa **as long as** the destination Slave ID is not `1` (i.e. the ID
+of the bridge itself). In fact, Slave ID `1` is leveraged by the bridge itself for its configuration. This
+scheme makes the querying of remote Modbus-enabled devices over LoRa transparent: one just needs to query
+a Slave ID other than `1` and the RTU frame will be radiated for other bridges to pick it up.
 
-In order to be as flexible as possible we enabled communication over both *TCP* and regular serial interfaces such as *RS-485*. The result of our efforts is contained in the `server.go` file defining the server itself together with the `mb-master.service` unit file which allows us to run it as a detached daemon under normal circumstances.
+Queried data will be inserted into memory area serving as the Modbus Slave's registers. This will be queried
+over TCP by a remote industrial-grade PLC implementing a Modbus/TCP client. The register addresses where
+data is served is fully configurable through command-line flags.
 
-This slave will receive data it needs to offer to teh PLC behind it. In doing so we'll have to enable some sort of data entry procedures. On the filed we'll be receiving data over a LoRa radio with a protocol we've developed ourselves. The thing is, we actually have to test stuff out beforehand! That's why we decided to enable the reception of data over UDP too. We chose *UDP* over *TCP* due to its enhanced simplicity: there's no need to manage connections and the like! Given Go's native concurrency, this all works out of the box in a parallel fashion: that's quite something!
+This implementation is **currently deployed** on the water quality control hub at Guadalajara's EDAR on
+a Raspberry Pi 4 reachable on IPv4 address `192.168.240.4`. The implementation is running headlessly
+as a SystemD unit defined on `mb-master.service`. The applicable and interesting options are explicitly
+defined on the `ExecStart` clause, which would make the appropriate invocation:
 
-In order to leverage our UDP data path we need to somehow send information. We can thankfully do su with `nc(1)`. We just need to tell it to use UDP instead of TCP (which is the default) and we should be good to go:
+    /bin/mb-master --local-mb-bind-address 0.0.0.0 --local-mb-bind-port 502           \
+        --remote-mb-enable --remote-mb-serial-dev /dev/ttyUSB0 --remote-mb-timeout 60 \
+        --udp-enable --udp-bind-address 0.0.0.0
+
+## Compilation
+In order to ease compilation, this implementation includes a `Taskfile` offering the following targets:
+
+- `mac`: Builds the application for macOS machines.
+- `arm`: Builds the application for ARM devices such as the Raspberry Pi 4.
+
+Running any target is a mater of invoking `task <target-name>`.
+
+## Debugging
+In order to test data insertion we included a piece of code exposing a UDP socket. We leaned towards UDP
+because it is much easier to manage than TCP and it can be leveraged with tools such as `nc(1)`. Once
+can invoke the application and then insert data with:
 
     # Run the server on another terminal: we'll bind the UDP socket to 127.0.0.1:1503
-    collado@hoth:0:~$  ./bin/mb-master-mac --remote-mb-enable=false
+    $  ./bin/mb-master-mac --remote-mb-enable=false
 
-    # And then fire up netcat: you can type stuff on the session that opens up.
-    collado@hoth:0:~$ nc -u 127.0.0.1 1503
+    # And then fire up netcat (in UDP mode): you can type stuff on the session that opens up.
+    $ nc -u 127.0.0.1 1503
     {"deviceId": "geonosis", "data": 5}
 
-With that you should be able to then query the server to get back the information it's updated. Nevertheless, the server's log messages should provide very verbosy information making the entire information update process very transparent.
+The data insertion will be reflected on the logs! On top of that, one can use the `mb-query` tool
+to verify data can be retrieved:
+
+    $ mb-query tcp --host 127.0.0.1 --port 1502 readHolding <register-address>
+
+What's more, address `0` contains static value `0xABCD`:
+
+    $ mb-query tcp --host 127.0.0.1 --port 1502 readHolding 0
+    Data for address 0x0:
+        Decimal -> 43981
+        Hex -> 0xabcd
+        Octal -> 0125715

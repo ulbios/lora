@@ -1,4 +1,4 @@
-module github.com/ulbios/gedar/mb-master
+module github.com/ulbios/lora/mb-master
 
 go 1.19
 
