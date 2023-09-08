@@ -1,4 +1,4 @@
-module mb-gateway
+module module github.com/ulbios/lora/mb-gateway
 
 go 1.17
 
