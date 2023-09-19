@@ -44,10 +44,10 @@ func InsertDataLoRa() error {
 
 	for {
 		for id, modbusAddresses := range idToModbusAddress {
-			log.Printf("requesting data for device %s...\n", id)
+			log.Printf("requesting data for device %q...\n", id)
 			remoteData, err := ReadHoldingRegister(remoteClients[id], modbusAddresses.RemoteModbusAddr)
 			if err != nil {
-				log.Printf("error receiving data: %v\n", err)
+				log.Printf("error receiving data: %v, keeping the last value\n", err)
 			} else {
 				log.Printf("inserting received data '%d' into local server @ %#x\n", remoteData, modbusAddresses.LocalModbusAddr)
 				_, err = localClient.WriteSingleRegister(modbusAddresses.LocalModbusAddr, remoteData)
