@@ -48,13 +48,14 @@ func InsertDataLoRa() error {
 			remoteData, err := ReadHoldingRegister(remoteClients[id], modbusAddresses.RemoteModbusAddr)
 			if err != nil {
 				log.Printf("error receiving data: %v\n", err)
+			} else {
+				log.Printf("inserting received data '%d' into local server @ %#x\n", remoteData, modbusAddresses.LocalModbusAddr)
+				_, err = localClient.WriteSingleRegister(modbusAddresses.LocalModbusAddr, remoteData)
+				if err != nil {
+					log.Printf("error updating the local Modbus server: %v\n", err)
+				}
 			}
 
-			log.Printf("inserting received data '%d' into local server @ %#x\n", remoteData, modbusAddresses.LocalModbusAddr)
-			_, err = localClient.WriteSingleRegister(modbusAddresses.LocalModbusAddr, remoteData)
-			if err != nil {
-				log.Printf("error updating the local Modbus server: %v\n", err)
-			}
 			log.Printf("waiting for %d seconds until the next request...\n", requestWait)
 			time.Sleep(time.Duration(requestWait) * time.Second)
 		}
