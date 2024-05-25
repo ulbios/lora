@@ -49,19 +49,28 @@ type Opts struct {
 	// on the transmitter and whether to check the packets against
 	// it on the receiver.
 	Crc bool
+
+	BandwidthKHz    uint
+	CodingRate      byte
+	SpreadingFactor byte
+	TxPowerDbm      uint
 }
 
 // DefaultOpts are the recommended options for the radio.
 var DefaultOpts = Opts{
-	Baudrate:       5 * machine.MHz,
-	LittleEndian:   false,
-	Mode:           machine.Mode0,
-	ResetPin:       machine.D9,
-	FrequencyMHz:   868,
-	PreambleLength: 8,
-	HighPower:      true,
-	Agc:            false,
-	Crc:            true,
+	Baudrate:        5 * machine.MHz,
+	LittleEndian:    false,
+	Mode:            machine.Mode0,
+	ResetPin:        machine.D9,
+	FrequencyMHz:    868,
+	PreambleLength:  8,
+	HighPower:       true,
+	Agc:             false,
+	Crc:             true,
+	BandwidthKHz:    125 * machine.KHz,
+	CodingRate:      8,
+	SpreadingFactor: 12,
+	TxPowerDbm:      13,
 }
 
 // Dev represents an RFM9x radio
@@ -145,12 +154,12 @@ func New(o *Opts) (*Dev, error) {
 	dev.SetFifoBaseAddrs(0x0, 0x0)
 	dev.SetCarrierFrequencyMHz(o.FrequencyMHz)
 	dev.SetPreambleLength(uint16(o.PreambleLength))
-	dev.SetBwHz(125000)
-	dev.SetCodingRate(5)
-	dev.SetSpreadingFactor(7)
+	dev.SetBwHz(o.BandwidthKHz)
+	dev.SetCodingRate(o.CodingRate)
+	dev.SetSpreadingFactor(o.SpreadingFactor)
 	dev.SetCrc(o.Crc)
 	dev.SetAgc(o.Agc)
-	dev.SetTxPower(13)
+	dev.SetTxPower(o.TxPowerDbm)
 	dev.SetMode(OpModeStandby)
 
 	txB, rxB := dev.FifoBaseAddrs()
